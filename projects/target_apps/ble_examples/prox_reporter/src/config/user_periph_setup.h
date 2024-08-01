@@ -155,6 +155,8 @@
 #if defined (__DA14531__) // button
     #define GPIO_BUTTON_PORT        GPIO_PORT_0
     #define GPIO_BUTTON_PIN         GPIO_PIN_11
+    #define GPIO_LED_PORT           GPIO_PORT_0
+    #define GPIO_LED_PIN            GPIO_PIN_9
 #else
     #define GPIO_BUTTON_PORT        GPIO_PORT_1
     #define GPIO_BUTTON_PIN         GPIO_PIN_1

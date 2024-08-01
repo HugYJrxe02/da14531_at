@@ -36,6 +36,15 @@ extern void app_uart_notify(void);
 static void timer0ProcessCallback(void)
 {
 
+#if defined(GPIO_LED_PORT) && defined(GPIO_LED_PIN)
+    static uint8_t flag = false;
+    flag = !flag;
+    if (flag)
+            GPIO_SetActive( GPIO_LED_PORT, GPIO_LED_PIN );
+    else
+        GPIO_SetInactive( GPIO_LED_PORT, GPIO_LED_PIN);
+#endif
+
 #if 1    
     if (!Uart1RxFlag)
     {
@@ -76,7 +85,7 @@ void timer0Init(void)
     timer0_init(TIM0_CLK_FAST, PWM_MODE_ONE, TIM0_CLK_DIV_BY_10);
 
     // reload value for 100ms (T = 1/200kHz * RELOAD_100MS = 0,000005 * 20000 = 100ms)
-    timer0_set_pwm_on_counter(LOAD_VALUE);
+    timer0_set_pwm_on_counter(LOAD_VALUE); // 4000=>20ms 200=>1ms
 
     // Enable SWTIM_IRQn irq
     timer0_enable_irq();

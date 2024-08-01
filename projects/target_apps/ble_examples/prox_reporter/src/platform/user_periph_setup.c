@@ -84,6 +84,10 @@ void GPIO_reservations(void)
     // Push Button
     RESERVE_GPIO(PUSH_BUTTON, GPIO_BUTTON_PORT, GPIO_BUTTON_PIN, PID_GPIO);
 
+#if defined(GPIO_LED_PORT) && defined(GPIO_LED_PIN)
+    RESERVE_GPIO(LED, GPIO_LED_PORT, GPIO_LED_PIN, PID_GPIO);
+#endif
+
 #if defined (__DA14531__) && (defined (CFG_APP_GOTO_HIBERNATION) || defined (CFG_APP_GOTO_STATEFUL_HIBERNATION))
     // Wake up from hibernation pin
     RESERVE_GPIO(HIB_WAKE_UP, HIB_WAKE_UP_PORT, HIB_WAKE_UP_PIN, PID_GPIO);
@@ -141,6 +145,9 @@ void set_pad_functions(void)        // set gpio port function mode
 
     // Push Button
     GPIO_ConfigurePin(GPIO_BUTTON_PORT, GPIO_BUTTON_PIN, INPUT_PULLUP, PID_GPIO, false);
+#if defined(GPIO_LED_PORT) && defined(GPIO_LED_PIN)
+    GPIO_ConfigurePin(GPIO_LED_PORT, GPIO_LED_PIN, OUTPUT, PID_GPIO, false);
+#endif
 
 #if defined (__DA14531__) && (defined (CFG_APP_GOTO_HIBERNATION) || defined (CFG_APP_GOTO_STATEFUL_HIBERNATION))
     // Wake up from hibernation pin
