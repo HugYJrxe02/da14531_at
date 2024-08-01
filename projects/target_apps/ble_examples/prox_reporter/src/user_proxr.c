@@ -134,7 +134,7 @@ static void app_resume_system_from_sleep(void)
 
 /**
  ****************************************************************************************
- * @brief Button press callback function. Registered in WKUPCT driver.
+ * @brief Button press callback function. Registered in WKUPCT driver. 按键回调函数
  ****************************************************************************************
  */
 static void app_button_press_cb(void)
@@ -158,7 +158,7 @@ void app_button_enable(void)
     if (GPIO_GetPinStatus(GPIO_BUTTON_PORT, GPIO_BUTTON_PIN))
     {
         wkupct_enable_irq(WKUPCT_PIN_SELECT(GPIO_BUTTON_PORT, GPIO_BUTTON_PIN), // select pin (GPIO_BUTTON_PORT, GPIO_BUTTON_PIN)
-                          WKUPCT_PIN_POLARITY(GPIO_BUTTON_PORT, GPIO_BUTTON_PIN, WKUPCT_PIN_POLARITY_LOW), // polarity low
+                          WKUPCT_PIN_POLARITY(GPIO_BUTTON_PORT, GPIO_BUTTON_PIN, WKUPCT_PIN_POLARITY_LOW), // polarity low 按键按下后松开
                           1, // 1 event
                           0); // debouncing time = 0
     }
@@ -633,9 +633,9 @@ void user_catch_rest_hndl(ke_msg_id_t const msgid,
 							//chen 2021-7-7
                case CUST1_IDX_CP_RX_VAL:
 //               user_custs1_server_rx_ind_handler(msgid, msg_param, dest_id, src_id);
-						     uart_outdata_printf(&msg_param->value[0], msg_param->length);							     
+						     uart_outdata_printf(&msg_param->value[0], msg_param->length);// 将接收到的APP数据通过串口发送
 //						       uart_send(UART1, &msg_param->value[0], msg_param->length, UART_OP_DMA);	
-//                   uart_wait_tx_finish(UART1);								 
+//                   uart_wait_tx_finish(UART1);
 									 break;
                case CUST1_IDX_CP_TX_VAL:
 //                   user_custs1_server_tx_cfg_ind_handler(msgid, msg_param, dest_id, src_id);

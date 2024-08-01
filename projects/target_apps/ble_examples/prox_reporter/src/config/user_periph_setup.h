@@ -152,7 +152,7 @@
 /****************************************************************************************/
 /* Button configuration                                                                 */
 /****************************************************************************************/
-#if defined (__DA14531__)
+#if defined (__DA14531__) // button
     #define GPIO_BUTTON_PORT        GPIO_PORT_0
     #define GPIO_BUTTON_PIN         GPIO_PIN_11
 #else
