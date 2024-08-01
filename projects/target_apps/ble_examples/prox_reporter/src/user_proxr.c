@@ -555,64 +555,33 @@ void user_custs1_server_rx_ind_handler(ke_msg_id_t const msgid,
 		}
 }
 
-
-//chen 2020-7-7
-//void app_uart_notify(void) 
-//{                                                            
-//	if(!queueIsEmpty(&UartRxQueue))
-//	{			    
-//		int16_t len;
-//		void *pData;
-//		len = queueDequeue(&UartRxQueue, &pData);	
-
-//		struct custs1_val_ntf_ind_req *req = KE_MSG_ALLOC_DYN(CUSTS1_VAL_NTF_REQ,
-//															  prf_get_task_from_id(TASK_ID_CUSTS1),
-//															  TASK_APP,
-//															  custs1_val_ntf_ind_req,
-//														     len);
-
-
-//	    req->handle = CUST1_IDX_CP_TX_VAL;
-//	    req->length = len;    
-//	    req->notification = true;	
-//	    memcpy(req->value, pData, len);	    
-//		
-//		  free(pData);
-//		
-//	    ke_msg_send(req);	
-//	}
-//}
-//chen 2021-7-7
+// 数据notify到app
 void app_uart_notify(void) 
 {   
- uint32_t state = 0;
- state = ke_get_max_mem_usage();
- if( state <= 2988 ) 
- {    
-   
-  if(!queueIsEmpty(&UartRxQueue))
-  {       
-   int16_t len;    
-    uint8_t pData[256] = {0};
+    uint32_t state = 0;
+    state = ke_get_max_mem_usage();
+    if( state <= 2988 ) 
+    {    
+        if(!queueIsEmpty(&UartRxQueue))
+        {       
+            int16_t len;    
+            uint8_t pData[256] = {0};
 
+            len = queueDequeue(&UartRxQueue, &pData);
 
-   len = queueDequeue(&UartRxQueue, &pData);
-   
-   struct custs1_val_ntf_ind_req *req = KE_MSG_ALLOC_DYN(CUSTS1_VAL_NTF_REQ,
-                  prf_get_task_from_id(TASK_ID_CUSTS1),
-                  TASK_APP,
-                  custs1_val_ntf_ind_req,
-                     len);
- 
-      
-       req->handle = CUST1_IDX_CP_TX_VAL;
-       req->length = len;   
-       req->notification = true; 
-       memcpy(req->value, pData, len);                      
-       ke_msg_send(req);  
+            struct custs1_val_ntf_ind_req *req = KE_MSG_ALLOC_DYN(CUSTS1_VAL_NTF_REQ,
+                            prf_get_task_from_id(TASK_ID_CUSTS1),
+                            TASK_APP,
+                            custs1_val_ntf_ind_req,
+                            len);
+
+            req->handle = CUST1_IDX_VAL;
+            req->length = len;   
+            req->notification = true; 
+            memcpy(req->value, pData, len);                      
+            ke_msg_send(req);  
+        }
     }
- }
-  
 }
 
 
@@ -630,16 +599,9 @@ void user_catch_rest_hndl(ke_msg_id_t const msgid,
 
             switch (msg_param->handle)
             {
-							//chen 2021-7-7
-               case CUST1_IDX_CP_RX_VAL:
-//               user_custs1_server_rx_ind_handler(msgid, msg_param, dest_id, src_id);
-						     uart_outdata_printf(&msg_param->value[0], msg_param->length);// 将接收到的APP数据通过串口发送
-//						       uart_send(UART1, &msg_param->value[0], msg_param->length, UART_OP_DMA);	
-//                   uart_wait_tx_finish(UART1);
-									 break;
-               case CUST1_IDX_CP_TX_VAL:
-//                   user_custs1_server_tx_cfg_ind_handler(msgid, msg_param, dest_id, src_id);
-                    break;
+               case CUST1_IDX_VAL:
+                uart_outdata_printf((char *)&msg_param->value[0], msg_param->length);// 将接收到的APP数据通过串口发送
+                break;
 
                 default:
                     break;
@@ -652,8 +614,8 @@ void user_catch_rest_hndl(ke_msg_id_t const msgid,
 
             switch (msg_param->handle)
             {
-                case CUST1_IDX_CP_TX_VAL:
-//									user_custs1_server_tx_ntf_cfm_handler(msgid, msg_param, dest_id, src_id);
+                case CUST1_IDX_VAL:
+                    // user_custs1_server_tx_ntf_cfm_handler(msgid, msg_param, dest_id, src_id);
                     break;
 
                 default:
@@ -668,8 +630,6 @@ void user_catch_rest_hndl(ke_msg_id_t const msgid,
 
             switch (msg_param->handle)
             {
-
-
                 default:
                 break;
              }

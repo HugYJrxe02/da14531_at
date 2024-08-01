@@ -229,4 +229,6 @@ void GPIO_reservations(void);
  */
 void set_pad_functions(void);
 
+void uart_outdata_printf(char *str, uint8_t len);
+
 #endif // _USER_PERIPH_SETUP_H_

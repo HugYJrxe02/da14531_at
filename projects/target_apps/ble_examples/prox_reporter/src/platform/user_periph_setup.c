@@ -297,18 +297,17 @@ void uart_outdata_printf(char *str, uint8_t len)
 void systick_callback(void)
 {
     if (!Uart1RxFlag)
- {
-  if (uartBuf_index)
-  {  
-   void *err = NULL;
-   err = (void *)queueEnqueue(&UartRxQueue, (void*)uartBuf, uartBuf_index);
-//   MyLog("err:%d, uartBuf_index = %d, %s \n", err, uartBuf_index, __FUNCTION__);
-   uartBuf_index = 0;
-  } 
- }
- 
-// MyLog("%s , %d\n", __FUNCTION__, __LINE__);
- systick_stop();
+    {
+        if (uartBuf_index)
+        {  
+            void *err = NULL;
+            err = (void *)queueEnqueue(&UartRxQueue, (void*)uartBuf, uartBuf_index);
+            //   MyLog("err:%d, uartBuf_index = %d, %s \n", err, uartBuf_index, __FUNCTION__);
+            uartBuf_index = 0;
+        } 
+    }
+    // MyLog("%s , %d\n", __FUNCTION__, __LINE__);
+    systick_stop();
 }
 //chen 2021-7-12
 #define NodeSize  253
@@ -316,33 +315,30 @@ void uart_receive_cb(uint16_t length)
 {        
 	void *err = 0;		
 #if 1	  
-	//	wdg_reload(WATCHDOG_DEFAULT_PERIOD);
-		Uart1RxFlag = true;	
-		systick_stop();		   
-		uartBuf[uartBuf_index++] = rxbuf[0];
-	    if( uartBuf_index == NodeSize )
-	    {
-			err = (void *)queueEnqueue(&UartRxQueue, (void*)uartBuf, uartBuf_index);
-			uartBuf_index = 0;
-	    }    
+    //	wdg_reload(WATCHDOG_DEFAULT_PERIOD);
+    Uart1RxFlag = true;	
+    systick_stop();		   
+    uartBuf[uartBuf_index++] = rxbuf[0];
+    if( uartBuf_index == NodeSize )
+    {
+        err = (void *)queueEnqueue(&UartRxQueue, (void*)uartBuf, uartBuf_index);
+        uartBuf_index = 0;
+    }    
 
-		Uart1RxFlag = false;
+    Uart1RxFlag = false;
 
 #endif
 
-		uart_register_rx_cb(UART1, uart_receive_cb);
-	    uart_receive(UART1, (uint8_t *)rxbuf, sizeof(rxbuf), UART_OP_DMA);
+    uart_register_rx_cb(UART1, uart_receive_cb);
+    uart_receive(UART1, (uint8_t *)rxbuf, sizeof(rxbuf), UART_OP_DMA);
 
 #if 1
-		extern void systick_callback(void);
-		systick_register_callback(systick_callback);
-		/*Timer set to (5000) 5 ms to cover all UART baud rates.*/
-	    systick_start(50000, true);
+    extern void systick_callback(void);
+    systick_register_callback(systick_callback);
+    /*Timer set to (5000) 5 ms to cover all UART baud rates.*/
+    systick_start(50000, true);
 
 #endif
-
-
-	
 }
 
 
