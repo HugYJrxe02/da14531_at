@@ -74,6 +74,8 @@ extern int queueIsEmpty(pQueue q);
 
 #define MAX_CMD_LEN 20
 #define MAX_PARAM_LEN 256
+
+static bool ble_notify_app(uint8_t* pdata, int16_t len);
 /*
  * FUNCTION DEFINITIONS
  ****************************************************************************************
@@ -563,6 +565,14 @@ static bool app_at_cmd_deal(char* cmd)
     char rsp[256] = {0};
     sprintf(rsp, "cmd: %s\r\n", cmd);
     uart_outdata_printf(rsp, strlen(rsp));
+
+    if (strncmp(cmd, "ADVERTISE", strlen("OPENBLE")) == 0) {
+        app_easy_gap_undirected_advertise_start();
+    } else if (strncmp(cmd, "DISCON", strlen("DISCON")) == 0) {
+        app_easy_gap_disconnect(app_connection_idx);
+    } else if (strncmp(cmd, "DISADVERTISE", strlen("DISCON")) == 0) {
+        app_easy_gap_advertise_stop();
+    } 
     return true;
 }
 
@@ -571,6 +581,10 @@ static bool app_at_config_deal(char* cmd, char* param)
     char rsp[256] = {0};
     sprintf(rsp, "cmd: %s, param: %s\r\n", cmd, param);
     uart_outdata_printf(rsp, strlen(rsp));
+
+    if (strncmp(cmd, "WRITE", strlen("WRITE")) == 0) {
+        ble_notify_app(param, strlen(param));
+    } 
     return true;
 }
 
@@ -609,32 +623,21 @@ void app_uart_deal(void)
 }
 
 // 数据notify到app
-void app_uart_notify(void) 
+static bool ble_notify_app(uint8_t* pData, int16_t len) 
 {   
-    uint32_t state = 0;
-    state = ke_get_max_mem_usage();
-    if( state <= 2988 ) 
-    {    
-        if(!queueIsEmpty(&UartRxQueue))
-        {       
-            int16_t len;    
-            uint8_t pData[256] = {0};
+    struct custs1_val_ntf_ind_req *req = KE_MSG_ALLOC_DYN(CUSTS1_VAL_NTF_REQ,
+                    prf_get_task_from_id(TASK_ID_CUSTS1),
+                    TASK_APP,
+                    custs1_val_ntf_ind_req,
+                    len);
 
-            len = queueDequeue(&UartRxQueue, &pData);
+    req->handle = CUST1_IDX_VAL;
+    req->length = len;   
+    req->notification = true; 
+    memcpy(req->value, pData, len);
+    ke_msg_send(req);
 
-            struct custs1_val_ntf_ind_req *req = KE_MSG_ALLOC_DYN(CUSTS1_VAL_NTF_REQ,
-                            prf_get_task_from_id(TASK_ID_CUSTS1),
-                            TASK_APP,
-                            custs1_val_ntf_ind_req,
-                            len);
-
-            req->handle = CUST1_IDX_VAL;
-            req->length = len;   
-            req->notification = true; 
-            memcpy(req->value, pData, len);                      
-            ke_msg_send(req);  
-        }
-    }
+    return true;
 }
 
 

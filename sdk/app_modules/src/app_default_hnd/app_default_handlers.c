@@ -199,7 +199,8 @@ void default_app_on_set_dev_config_complete(void)
 
 void default_app_on_db_init_complete( void )
 {
-    CALLBACK_ARGS_0(user_default_app_operations.default_operation_adv)
+    // 初始化完成,等待接收到控制指令再开启广播
+    // CALLBACK_ARGS_0(user_default_app_operations.default_operation_adv)
 }
 
 void default_app_on_get_dev_name(struct app_device_name* device_name)

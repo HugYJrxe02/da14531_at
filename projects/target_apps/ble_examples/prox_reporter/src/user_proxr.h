@@ -194,7 +194,7 @@ void user_catch_rest_hndl(ke_msg_id_t const msgid,
                           ke_task_id_t const dest_id,
                           ke_task_id_t const src_id);
 void user_app_on_connection(uint8_t conidx, struct gapc_connection_req_ind const *param);		
-void app_uart_notify(void);
+
 void app_uart_deal(void);
 //void user_app_on_data_length_change(uint8_t conidx, struct gapc_le_pkt_size_ind *ind);													
 													

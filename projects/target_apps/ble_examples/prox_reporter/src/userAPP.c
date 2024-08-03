@@ -6,6 +6,7 @@
 #include "arch_console.h"
 #include "rf_531.h"
 #include "myqueue.h"
+#include "user_proxr.h"
 
 
 #define     NO_PWM           0x0                // PWM not used
@@ -31,8 +32,7 @@ static tim0_2_clk_div_config_t clk_div_config =
     .clk_div  = TIM0_2_CLK_DIV_8
 };
 
-//chen 2021-7-7
-extern void app_uart_notify(void);
+
 static void timer0ProcessCallback(void)
 {
 
