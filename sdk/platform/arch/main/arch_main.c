@@ -164,7 +164,7 @@ int main(void)
 
     //global initialise
     system_init();
-
+    app_button_enable();
     /*
      ************************************************************************************
      * Platform initialization

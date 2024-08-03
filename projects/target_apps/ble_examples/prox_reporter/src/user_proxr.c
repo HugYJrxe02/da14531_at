@@ -532,7 +532,7 @@ void app_advertise_complete(const uint8_t status)
         configure_timer1_wakeup();
 #else
         // Configure button to trigger wake-up interrupt from extended sleep
-        app_button_enable();
+        // app_button_enable();
 #endif
     }
 }

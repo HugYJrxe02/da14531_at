@@ -410,6 +410,7 @@ static struct gapm_start_advertise_cmd* app_easy_gap_non_connectable_advertise_s
 
 /**
  ****************************************************************************************
+ *         创建并启动一个非定向广播
  * @brief Create advertising message for connectable undirected event (ADV_IND).
  * @return gapm_start_advertise_cmd Pointer to the advertising message
  ****************************************************************************************
@@ -810,11 +811,13 @@ void app_easy_gap_confirm(uint8_t conidx, enum gap_auth auth, uint8_t svc_change
 }
 #endif
 
+// 检查当前是否有活跃的非定向广播
 struct gapm_start_advertise_cmd* app_easy_gap_undirected_advertise_get_active(void)
 {
     return(app_easy_gap_undirected_advertise_start_create_msg());
 }
 
+// 启动一个非定向广播
 void app_easy_gap_undirected_advertise_start(void)
 {
     struct gapm_start_advertise_cmd* cmd;
@@ -881,6 +884,7 @@ void app_easy_gap_advertise_stop(void)
 #endif
 
 #if (!EXCLUDE_DLG_TIMER)
+// 启动一个带有超时的非定向蓝牙广播
 void app_easy_gap_undirected_advertise_with_timeout_start(uint32_t delay, void (*timeout_callback)(void))
 {
     //stop the current running timer
