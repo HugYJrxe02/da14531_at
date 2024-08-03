@@ -268,37 +268,10 @@ static void uart_send_cb(uint16_t length)
 void uart_outdata_printf(char *str, uint8_t len)
 {
     uart_send_finished = false;
-    uart_register_tx_cb(UART1, uart_send_cb);
-    uart_send(UART1, (uint8_t *) str, len, UART_OP_DMA);   //uart_send(UART1, (uint8_t *) str, len, UART_OP_INTR);
-    while(uart_send_finished == false);
+    // uart_register_tx_cb(UART1, uart_send_cb);
+    uart_send(UART1, (uint8_t *) str, len, UART_OP_BLOCKING);   //uart_send(UART1, (uint8_t *) str, len, UART_OP_INTR);
+    // while(uart_send_finished == false);
 }
-
-
-
-//chen 2020-7-7
-//static void uart_receive_cb(uint16_t length)
-//{   
-
-//	Uart1RxFlag = true;	
-//	
-//	if(uartBuf_index <= RXBUFLEN)
-//    {
-//       uartBuf[uartBuf_index++] = rxbuf[0];
-//    }    	
-
-//    if(PACKAGE_LEN == uartBuf_index )	// || Uart1RxTimeOutFlag)
-//    {
-//		   queueEnqueue(&UartRxQueue, (void*)uartBuf, uartBuf_index); 
-////      app_uart_notify();
-//		
-//        uartBuf_index = 0;
-//    }    
-
-//	  Uart1RxFlag = false;
-////	
-//	 uart_register_rx_cb(UART1, uart_receive_cb);
-//   uart_receive(UART1, (uint8_t *)rxbuf, sizeof(rxbuf), UART_OP_DMA);
-//}	
 
 
 void systick_callback(void)

@@ -71,6 +71,9 @@ uint8_t app_connection_idx                      __SECTION_ZERO("retention_mem_ar
 #define APP_SLEEP_SET_TIMER_REQUEST_TO        (6000)
 extern void userAPPInit(void);
 extern int queueIsEmpty(pQueue q);
+
+#define MAX_CMD_LEN 20
+#define MAX_PARAM_LEN 256
 /*
  * FUNCTION DEFINITIONS
  ****************************************************************************************
@@ -98,12 +101,12 @@ static void app_wakeup_cb(void)
 
 void app_sleep_set_timer_cb(void)
 {
-	  if(!arch_get_sleep_mode())
-		{
-			arch_restore_sleep_mode();
-			arch_set_sleep_mode(app_default_sleep_mode);
-		  MyPrintf("arch_set_extended_sleep\n"); 
-		}
+    if(!arch_get_sleep_mode())
+    {
+        arch_restore_sleep_mode();
+        arch_set_sleep_mode(app_default_sleep_mode);
+        MyPrintf("arch_set_extended_sleep\n"); 
+    }
 }
 
 static void app_resume_system_from_sleep(void)
@@ -122,14 +125,14 @@ static void app_resume_system_from_sleep(void)
         arch_ble_ext_wakeup_off();
         app_easy_wakeup();
     }
-		//chen 2021-7-7
-		if (arch_get_sleep_mode())
-		{
-			arch_restore_sleep_mode();
-			arch_disable_sleep();
-		}
-		app_sleep_set_timer=app_easy_timer(APP_SLEEP_SET_TIMER_REQUEST_TO, app_sleep_set_timer_cb);
-	  userAPPInit();
+    //chen 2021-7-7
+    if (arch_get_sleep_mode())
+    {
+        arch_restore_sleep_mode();
+        arch_disable_sleep();
+    }
+    app_sleep_set_timer=app_easy_timer(APP_SLEEP_SET_TIMER_REQUEST_TO, app_sleep_set_timer_cb);
+    userAPPInit();
 }
 
 /**
@@ -553,6 +556,56 @@ void user_custs1_server_rx_ind_handler(ke_msg_id_t const msgid,
         MyPrintf("the app send data to BLE device.\r\n"); 
 			
 		}
+}
+
+static bool app_at_cmd_deal(char* cmd)
+{   
+    char rsp[256] = {0};
+    sprintf(rsp, "cmd: %s\r\n", cmd);
+    uart_outdata_printf(rsp, strlen(rsp));
+    return true;
+}
+
+static bool app_at_config_deal(char* cmd, char* param)
+{
+    char rsp[256] = {0};
+    sprintf(rsp, "cmd: %s, param: %s\r\n", cmd, param);
+    uart_outdata_printf(rsp, strlen(rsp));
+    return true;
+}
+
+// 处理接收到的串口数据
+void app_uart_deal(void)
+{
+    uint32_t state = 0;
+    state = ke_get_max_mem_usage();
+    if( state <= 2988 ) 
+    {    
+        if(!queueIsEmpty(&UartRxQueue))
+        {       
+            int16_t len;    
+            uint8_t pData[256] = {0};
+            bool result = false;
+
+            len = queueDequeue(&UartRxQueue, &pData);
+
+            if (len > 3) {
+                char cmd[MAX_CMD_LEN];
+                char param[MAX_PARAM_LEN];
+                int num_args = sscanf(pData, "AT+%[^=]=%s\r\n", cmd, param);
+                if (num_args == 1) {
+                    // 处理仅带命令的情况
+                    app_at_cmd_deal(cmd);
+                    return;
+                } else if (num_args == 2) {
+                    // 处理带参数的情况
+                    app_at_config_deal(cmd, param);
+                    return;
+                }
+            }
+            uart_outdata_printf("ERR", 3);
+        }
+    }
 }
 
 // 数据notify到app

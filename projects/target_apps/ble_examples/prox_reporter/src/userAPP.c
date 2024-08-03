@@ -54,7 +54,7 @@ static void timer0ProcessCallback(void)
             uartBuf_index = 0;
             if(!queueIsEmpty(&UartRxQueue))
             {    
-                app_uart_notify();  
+                app_uart_deal();  
             }
         }    
 
