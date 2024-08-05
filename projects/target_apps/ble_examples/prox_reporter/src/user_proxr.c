@@ -68,7 +68,7 @@ timer_hnd app_sleep_set_timer                   __SECTION_ZERO("retention_mem_ar
 uint8_t app_connection_idx                      __SECTION_ZERO("retention_mem_area0");
 
 #define APP_PARAM_UPDATE_REQUEST_TO         (300) //1 (1000)   // 1000*10ms = 10sec, The maximum allowed value is 41943sec (4194300 * 10ms)
-#define APP_SLEEP_SET_TIMER_REQUEST_TO        (6000)
+#define APP_SLEEP_SET_TIMER_REQUEST_TO        (1000)
 extern void userAPPInit(void);
 extern int queueIsEmpty(pQueue q);
 
@@ -103,6 +103,7 @@ static void app_wakeup_cb(void)
 
 void app_sleep_set_timer_cb(void)
 {
+    app_sleep_set_timer = EASY_TIMER_INVALID_TIMER;
     if(!arch_get_sleep_mode())
     {
         arch_restore_sleep_mode();
@@ -133,6 +134,9 @@ static void app_resume_system_from_sleep(void)
         arch_restore_sleep_mode();
         arch_disable_sleep();
     }
+    //stop the current running timer
+    if(app_sleep_set_timer != EASY_TIMER_INVALID_TIMER)
+        app_easy_timer_cancel(app_sleep_set_timer);
     app_sleep_set_timer=app_easy_timer(APP_SLEEP_SET_TIMER_REQUEST_TO, app_sleep_set_timer_cb);
     userAPPInit();
 }
