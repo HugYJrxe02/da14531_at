@@ -483,16 +483,16 @@ static struct gapm_start_advertise_cmd* app_easy_gap_undirected_advertise_start_
             if (total_adv_space <= ADV_DATA_LEN)
             {
                 append_device_name(&cmd->info.host.adv_data_len,
-                                   USER_DEVICE_NAME_LEN,
+                                   device_info.dev_name.length,
                                    &(cmd->info.host.adv_data[cmd->info.host.adv_data_len]),
-                                   USER_DEVICE_NAME);
+                                   device_info.dev_name.name);
             }
             else if (total_scan_space <= SCAN_RSP_DATA_LEN)
             {
                 append_device_name(&cmd->info.host.scan_rsp_data_len,
-                                   USER_DEVICE_NAME_LEN,
+                                   device_info.dev_name.length,
                                    &(cmd->info.host.scan_rsp_data[cmd->info.host.scan_rsp_data_len]),
-                                   USER_DEVICE_NAME);
+                                   device_info.dev_name.name);
             }
          }
     }

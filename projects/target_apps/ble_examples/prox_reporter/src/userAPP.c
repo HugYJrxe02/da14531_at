@@ -35,16 +35,6 @@ static tim0_2_clk_div_config_t clk_div_config =
 
 static void timer0ProcessCallback(void)
 {
-
-#if defined(GPIO_LED_PORT) && defined(GPIO_LED_PIN)
-    static uint8_t flag = false;
-    flag = !flag;
-    if (flag)
-            GPIO_SetActive( GPIO_LED_PORT, GPIO_LED_PIN );
-    else
-        GPIO_SetInactive( GPIO_LED_PORT, GPIO_LED_PIN);
-#endif
-
 #if 1    
     if (!Uart1RxFlag)
     {

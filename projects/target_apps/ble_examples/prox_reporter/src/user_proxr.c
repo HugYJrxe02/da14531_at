@@ -103,6 +103,9 @@ static void app_wakeup_cb(void)
 
 void app_sleep_set_timer_cb(void)
 {
+#if defined(GPIO_LED_PORT) && defined(GPIO_LED_PIN)
+    GPIO_SetInactive( GPIO_LED_PORT, GPIO_LED_PIN);
+#endif
     app_sleep_set_timer = EASY_TIMER_INVALID_TIMER;
     if(!arch_get_sleep_mode())
     {
@@ -139,6 +142,10 @@ static void app_resume_system_from_sleep(void)
         app_easy_timer_cancel(app_sleep_set_timer);
     app_sleep_set_timer=app_easy_timer(APP_SLEEP_SET_TIMER_REQUEST_TO, app_sleep_set_timer_cb);
     userAPPInit();
+
+#if defined(GPIO_LED_PORT) && defined(GPIO_LED_PIN)
+    GPIO_SetActive( GPIO_LED_PORT, GPIO_LED_PIN );
+#endif
 }
 
 /**
@@ -564,19 +571,25 @@ void user_custs1_server_rx_ind_handler(ke_msg_id_t const msgid,
 		}
 }
 
+#define Cmp(cmd, str)  (strncmp(cmd, str, strlen(str)) == 0)
+
+struct bd_addr ble_device_mac   __SECTION_ZERO("retention_mem_area0");;
+
+
 static bool app_at_cmd_deal(char* cmd)
 {   
     char rsp[256] = {0};
     sprintf(rsp, "cmd: %s\r\n", cmd);
     uart_outdata_printf(rsp, strlen(rsp));
 
-    if (strncmp(cmd, "ADVERTISE", strlen("OPENBLE")) == 0) {
+    if (Cmp(cmd, "ADVERTISE")) {
+        llm_util_set_public_addr(&ble_device_mac);
         app_easy_gap_undirected_advertise_start();
-    } else if (strncmp(cmd, "DISCON", strlen("DISCON")) == 0) {
-        app_easy_gap_disconnect(app_connection_idx);
-    } else if (strncmp(cmd, "DISADVERTISE", strlen("DISCON")) == 0) {
+    } else if (Cmp(cmd, "DISADVERTISE")) {
         app_easy_gap_advertise_stop();
-    } 
+    } else if (Cmp(cmd, "DISCON")) {
+        app_easy_gap_disconnect(app_connection_idx);
+    }
     return true;
 }
 
@@ -586,9 +599,24 @@ static bool app_at_config_deal(char* cmd, char* param)
     sprintf(rsp, "cmd: %s, param: %s\r\n", cmd, param);
     uart_outdata_printf(rsp, strlen(rsp));
 
-    if (strncmp(cmd, "WRITE", strlen("WRITE")) == 0) {
+    if (Cmp(cmd, "WRITE")) {
         ble_notify_app(param, strlen(param));
-    } 
+    } else if (Cmp(cmd, "MAC")) {
+        if (strlen(param) == 12) {
+            uint8_t new_mac[6];
+            sscanf(param, "%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx", &new_mac[5], &new_mac[4], &new_mac[3], &new_mac[2], &new_mac[1], &new_mac[0]);
+            for (int i = 0; i < 6; i++) {
+                ble_device_mac.addr[i] = new_mac[i];
+            }
+        }
+    } else if (Cmp(cmd, "NAME")) {
+        struct gapc_set_dev_info_req_ind dev_info;
+        dev_info.req = GAPC_DEV_NAME;
+        uint8_t status;
+        memcpy(dev_info.info.name.value, param, strlen(param));
+        dev_info.info.name.length = strlen(param);
+        default_app_on_set_dev_info(&dev_info, &status);
+    }
     return true;
 }
 
@@ -622,6 +650,7 @@ void app_uart_deal(void)
                 }
             }
             uart_outdata_printf("ERR", 3);
+            uart_outdata_printf(pData, len);
         }
     }
 }
