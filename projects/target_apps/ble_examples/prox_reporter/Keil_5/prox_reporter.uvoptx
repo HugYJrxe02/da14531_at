@@ -479,7 +479,7 @@
         <Ww>
           <count>1</count>
           <WinNumber>1</WinNumber>
-          <ItemText>app_connection_idx</ItemText>
+          <ItemText>app_sleep_set_timer</ItemText>
         </Ww>
       </WatchWindow1>
       <WatchWindow2>
@@ -494,7 +494,7 @@
       </Tracepoint>
       <DebugFlag>
         <trace>0</trace>
-        <periodic>0</periodic>
+        <periodic>1</periodic>
         <aLwin>1</aLwin>
         <aCover>0</aCover>
         <aSer1>0</aSer1>

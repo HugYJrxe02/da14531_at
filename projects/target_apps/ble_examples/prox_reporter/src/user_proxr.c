@@ -588,7 +588,11 @@ static bool app_at_cmd_deal(char* cmd)
     } else if (Cmp(cmd, "DISADVERTISE")) {
         app_easy_gap_advertise_stop();
     } else if (Cmp(cmd, "DISCON")) {
-        app_easy_gap_disconnect(app_connection_idx);
+        if ((app_connection_idx < APP_EASY_MAX_ACTIVE_CONNECTION) && app_env[app_connection_idx].connection_active)
+            app_easy_gap_disconnect(app_connection_idx);
+    } else if (Cmp(cmd, "ISCONNECT")) {
+        bool isConnect = ((app_connection_idx < APP_EASY_MAX_ACTIVE_CONNECTION) && app_env[app_connection_idx].connection_active);
+        sprintf(rsp_value, "%d",  isConnect ? 1 : 0);
     } else if (Cmp(cmd, "NAME")) {
         struct app_device_name device_name;
         default_app_on_get_dev_name(&device_name);
