@@ -579,8 +579,8 @@ struct bd_addr ble_device_mac   __SECTION_ZERO("retention_mem_area0");;
 static bool app_at_cmd_deal(char* cmd)
 {   
     char rsp[256] = {0};
-    sprintf(rsp, "cmd: %s\r\n", cmd);
-    uart_outdata_printf(rsp, strlen(rsp));
+    char rsp_value[256] = {0};
+    bool result = 1;
 
     if (Cmp(cmd, "ADVERTISE")) {
         llm_util_set_public_addr(&ble_device_mac);
@@ -589,7 +589,23 @@ static bool app_at_cmd_deal(char* cmd)
         app_easy_gap_advertise_stop();
     } else if (Cmp(cmd, "DISCON")) {
         app_easy_gap_disconnect(app_connection_idx);
+    } else if (Cmp(cmd, "NAME")) {
+        struct app_device_name device_name;
+        default_app_on_get_dev_name(&device_name);
+        strncpy(rsp_value, device_name.name, device_name.length);
+    } else if (Cmp(cmd, "MAC")) {
+        sprintf(rsp_value, "%02X%02X%02X%02X%02X%02X", 
+            ble_device_mac.addr[5], ble_device_mac.addr[4], ble_device_mac.addr[3], 
+            ble_device_mac.addr[2], ble_device_mac.addr[1], ble_device_mac.addr[0]);
     }
+
+    if (strlen(rsp_value) > 0) {
+        sprintf(rsp, "+%s:%d, %s\r\nOK\r\n", cmd, result, rsp_value);
+    } else {
+        sprintf(rsp, "+%s:%d\r\nOK\r\n", cmd, result);
+    }
+    
+    uart_outdata_printf(rsp, strlen(rsp));
     return true;
 }
 
@@ -635,10 +651,13 @@ void app_uart_deal(void)
 
             len = queueDequeue(&UartRxQueue, &pData);
 
-            if (len > 3) {
+            if (len > 5) {
+                if (pData[len - 2] == '\r' && pData[len - 1] == '\n') 
+                    pData[len - 2] = '\0'; // 去掉\r\n
+
                 char cmd[MAX_CMD_LEN];
                 char param[MAX_PARAM_LEN];
-                int num_args = sscanf(pData, "AT+%[^=]=%s\r\n", cmd, param);
+                int num_args = sscanf(pData, "AT+%[^=]=%s", cmd, param);
                 if (num_args == 1) {
                     // 处理仅带命令的情况
                     app_at_cmd_deal(cmd);
