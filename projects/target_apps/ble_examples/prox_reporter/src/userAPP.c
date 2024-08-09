@@ -36,18 +36,9 @@ static tim0_2_clk_div_config_t clk_div_config =
 static void timer0ProcessCallback(void)
 {
 #if 1    
-    if (!Uart1RxFlag)
-    {
-        if (uartBuf_index)
-        {        
-            queueEnqueue(&UartRxQueue, (void*)uartBuf, uartBuf_index);
-            uartBuf_index = 0;
-            if(!queueIsEmpty(&UartRxQueue))
-            {    
-                app_uart_deal();  
-            }
-        }    
-
+    if(!queueIsEmpty(&UartRxQueue))
+    {    
+        app_uart_deal();  
     }
 #endif
 

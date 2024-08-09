@@ -259,7 +259,7 @@ static const i2c_eeprom_cfg_t i2c_eeprom_cfg = {
 #endif
 
 //chen 2021-7-7
-volatile bool uart_send_finished = false;
+// volatile bool uart_send_finished = false;
 
 //static void uart_send_cb(uint16_t length)
 //{
@@ -267,9 +267,9 @@ volatile bool uart_send_finished = false;
 //}
 void uart_outdata_printf(char *str, uint8_t len)
 {
-    uart_send_finished = false;
+    // uart_send_finished = false;
     // uart_register_tx_cb(UART1, uart_send_cb);
-    uart_send(UART1, (uint8_t *) str, len, UART_OP_BLOCKING);   //uart_send(UART1, (uint8_t *) str, len, UART_OP_INTR);
+    uart_send(UART1, (uint8_t *) str, len, UART_OP_DMA);   //uart_send(UART1, (uint8_t *) str, len, UART_OP_INTR);
     // while(uart_send_finished == false);
 }
 
@@ -296,8 +296,8 @@ void uart_receive_cb(uint16_t length)
 	void *err = 0;		
 #if 1	  
     //	wdg_reload(WATCHDOG_DEFAULT_PERIOD);
-    Uart1RxFlag = true;	
-    systick_stop();		   
+    Uart1RxFlag = true;
+    systick_stop();
     uartBuf[uartBuf_index++] = rxbuf[0];
     if( uartBuf_index == NodeSize )
     {
@@ -316,7 +316,7 @@ void uart_receive_cb(uint16_t length)
     extern void systick_callback(void);
     systick_register_callback(systick_callback);
     /*Timer set to (5000) 5 ms to cover all UART baud rates.*/
-    systick_start(50000, true);
+    systick_start(5000, true); // 50字节 * 86.8 us ≈ 4.34ms
 
 #endif
 }
