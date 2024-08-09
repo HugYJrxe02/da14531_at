@@ -64,7 +64,7 @@
 
 //chen 2021-7-7
 timer_hnd app_param_update_request_timer_used   __SECTION_ZERO("retention_mem_area0");
-timer_hnd app_sleep_set_timer                   __SECTION_ZERO("retention_mem_area0");
+volatile timer_hnd app_sleep_set_timer                   __SECTION_ZERO("retention_mem_area0");
 uint8_t app_connection_idx                      __SECTION_ZERO("retention_mem_area0");
 
 #define APP_PARAM_UPDATE_REQUEST_TO         (300) //1 (1000)   // 1000*10ms = 10sec, The maximum allowed value is 41943sec (4194300 * 10ms)
@@ -171,13 +171,13 @@ void app_button_enable(void)
     app_easy_wakeup_set(app_wakeup_cb);
     wkupct_register_callback(app_button_press_cb);
 
-    if (GPIO_GetPinStatus(GPIO_BUTTON_PORT, GPIO_BUTTON_PIN))
-    {
+//    if (GPIO_GetPinStatus(GPIO_BUTTON_PORT, GPIO_BUTTON_PIN))
+//    {
         wkupct_enable_irq(WKUPCT_PIN_SELECT(GPIO_BUTTON_PORT, GPIO_BUTTON_PIN), // select pin (GPIO_BUTTON_PORT, GPIO_BUTTON_PIN)
                           WKUPCT_PIN_POLARITY(GPIO_BUTTON_PORT, GPIO_BUTTON_PIN, WKUPCT_PIN_POLARITY_LOW), // polarity low 按键按下后松开
                           1, // 1 event
                           0); // debouncing time = 0
-    }
+//    }
 }
 
 #if (BLE_SUOTA_RECEIVER)
