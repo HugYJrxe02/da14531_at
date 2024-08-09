@@ -269,7 +269,7 @@ void uart_outdata_printf(char *str, uint8_t len)
 {
     // uart_send_finished = false;
     // uart_register_tx_cb(UART1, uart_send_cb);
-    uart_send(UART1, (uint8_t *) str, len, UART_OP_DMA);   //uart_send(UART1, (uint8_t *) str, len, UART_OP_INTR);
+    uart_send(UART1, (uint8_t *) str, len, UART_OP_BLOCKING);   //uart_send(UART1, (uint8_t *) str, len, UART_OP_INTR);
     // while(uart_send_finished == false);
 }
 

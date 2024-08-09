@@ -742,9 +742,21 @@ void user_catch_rest_hndl(ke_msg_id_t const msgid,
 
             switch (msg_param->handle)
             {
-               case CUST1_IDX_VAL:
-                uart_outdata_printf((char *)&msg_param->value[0], msg_param->length);// 将接收到的APP数据通过串口发送
-                break;
+                case CUST1_IDX_VAL:
+                {
+                #if 1 // +RCV:len
+                    uint8_t rcvBuf[256] = {0};
+                    sprintf(rcvBuf, "+RCV:%c,", msg_param->length); 
+                    uart_outdata_printf(rcvBuf, strlen(rcvBuf));
+                #endif
+                    uart_outdata_printf((char *)&msg_param->value[0], msg_param->length);
+
+                #if 1 // \r\n结束符
+                    uart_outdata_printf("\r\n", 2);
+                #endif
+
+                    break;
+                }
 
                 default:
                     break;
