@@ -261,10 +261,10 @@ static const i2c_eeprom_cfg_t i2c_eeprom_cfg = {
 //chen 2021-7-7
 volatile bool uart_send_finished = false;
 
-static void uart_send_cb(uint16_t length)
-{
-    uart_send_finished = true;
-}
+//static void uart_send_cb(uint16_t length)
+//{
+//    uart_send_finished = true;
+//}
 void uart_outdata_printf(char *str, uint8_t len)
 {
     uart_send_finished = false;

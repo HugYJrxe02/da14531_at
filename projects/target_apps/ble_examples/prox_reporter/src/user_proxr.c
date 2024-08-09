@@ -573,7 +573,13 @@ void user_custs1_server_rx_ind_handler(ke_msg_id_t const msgid,
 
 #define Cmp(cmd, str)  (strncmp(cmd, str, strlen(str)) == 0)
 
-struct bd_addr ble_device_mac   __SECTION_ZERO("retention_mem_area0");;
+struct bd_addr ble_device_mac   __SECTION_ZERO("retention_mem_area0");
+
+static bool get_ble_connect_state()
+{
+    return (app_connection_idx < APP_EASY_MAX_ACTIVE_CONNECTION) && app_env[app_connection_idx].connection_active;
+}
+
 
 
 static bool app_at_cmd_deal(char* cmd)
@@ -588,10 +594,10 @@ static bool app_at_cmd_deal(char* cmd)
     } else if (Cmp(cmd, "DISADVERTISE")) {
         app_easy_gap_advertise_stop();
     } else if (Cmp(cmd, "DISCON")) {
-        if ((app_connection_idx < APP_EASY_MAX_ACTIVE_CONNECTION) && app_env[app_connection_idx].connection_active)
+        if (get_ble_connect_state())
             app_easy_gap_disconnect(app_connection_idx);
     } else if (Cmp(cmd, "ISCONNECT")) {
-        bool isConnect = ((app_connection_idx < APP_EASY_MAX_ACTIVE_CONNECTION) && app_env[app_connection_idx].connection_active);
+        bool isConnect = get_ble_connect_state();
         sprintf(rsp_value, "%d",  isConnect ? 1 : 0);
     } else if (Cmp(cmd, "NAME")) {
         struct app_device_name device_name;
@@ -616,11 +622,16 @@ static bool app_at_cmd_deal(char* cmd)
 static bool app_at_config_deal(char* cmd, char* param)
 {
     char rsp[256] = {0};
-    sprintf(rsp, "cmd: %s, param: %s\r\n", cmd, param);
-    uart_outdata_printf(rsp, strlen(rsp));
+    char rsp_value[256] = {0};
+    bool result = 1;
 
     if (Cmp(cmd, "WRITE")) {
-        ble_notify_app(param, strlen(param));
+        if (get_ble_connect_state()){
+            ble_notify_app(param, strlen(param));
+        } else {
+            result = 0;
+            sprintf(rsp_value, "ble unconnect");
+        }
     } else if (Cmp(cmd, "MAC")) {
         if (strlen(param) == 12) {
             uint8_t new_mac[6];
@@ -628,6 +639,9 @@ static bool app_at_config_deal(char* cmd, char* param)
             for (int i = 0; i < 6; i++) {
                 ble_device_mac.addr[i] = new_mac[i];
             }
+        } else {
+            result = 0;
+            sprintf(rsp_value, "len=%d", strlen(param));
         }
     } else if (Cmp(cmd, "NAME")) {
         struct gapc_set_dev_info_req_ind dev_info;
@@ -637,6 +651,14 @@ static bool app_at_config_deal(char* cmd, char* param)
         dev_info.info.name.length = strlen(param);
         default_app_on_set_dev_info(&dev_info, &status);
     }
+
+    if (strlen(rsp_value) > 0) {
+        sprintf(rsp, "+%s:%d, %s\r\nOK\r\n", cmd, result, rsp_value);
+    } else {
+        sprintf(rsp, "+%s:%d\r\nOK\r\n", cmd, result);
+    }
+    
+    uart_outdata_printf(rsp, strlen(rsp));
     return true;
 }
 
@@ -671,9 +693,18 @@ void app_uart_deal(void)
                     app_at_config_deal(cmd, param);
                     return;
                 }
+            } else if (len == 4 && Cmp(pData, "AT\r\n"))
+            {
+                uart_outdata_printf("AT\r\nOK\r\n", 8);
+                return;
+            } 
+            
+            // 指令错误 回复
+            if (len > 0) {
+                char rsp[256] = {0};
+                sprintf(rsp, "+%s:0\r\nERR\r\n", pData);
+                uart_outdata_printf(rsp, strlen(rsp));
             }
-            uart_outdata_printf("ERR", 3);
-            uart_outdata_printf(pData, len);
         }
     }
 }
